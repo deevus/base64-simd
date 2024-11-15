@@ -54,7 +54,7 @@ pub fn main() !void {
             \\--encode --std
             \\--encode --simd
         });
-        std.os.exit(1);
+        std.process.exit(1);
     }
     if (std.mem.eql(u8, std.mem.span(std.os.argv[1]), "--encode")) {
         if (std.mem.eql(u8, std.mem.span(std.os.argv[2]), "--std")) {

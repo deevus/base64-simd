@@ -91,7 +91,7 @@ fn buildLibBase64(b: *Build, step: *Compile) !*Compile {
     // C Source
     inline for (source_files) |file| {
         lib64.addCSourceFile(.{
-            .file = .{ .path = try std.fs.path.join(b.allocator, &.{ dir(), file }) },
+            .file = b.path(file),
             .flags = &.{
                 "-std=c99",
                 "-O3",
@@ -102,9 +102,9 @@ fn buildLibBase64(b: *Build, step: *Compile) !*Compile {
         });
     }
     // config.h
-    lib64.addIncludePath(.{ .path = try std.fs.path.join(b.allocator, &.{ dir(), "deps/base64/lib" }) });
+    lib64.addIncludePath(b.path("deps/base64/lib"));
     // header
-    step.addIncludePath(.{ .path = try std.fs.path.join(b.allocator, &.{ dir(), "deps/base64/include" }) });
+    step.addIncludePath(b.path("deps/base64/include"));
 
     return lib64;
 }
@@ -134,7 +134,7 @@ pub fn build(b: *std.Build) void {
         .name = "base64",
         // In this case the main source file is merely a path, however, in more
         // complicated build scripts, this could be a generated file.
-        .root_source_file = .{ .path = "src/lib.zig" },
+        .root_source_file = b.path("src/lib.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -149,7 +149,7 @@ pub fn build(b: *std.Build) void {
     // Creates a step for unit testing. This only builds the test executable
     // but does not run it.
     const main_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/lib.zig" },
+        .root_source_file = b.path("src/lib.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -166,15 +166,15 @@ pub fn build(b: *std.Build) void {
     // Benchmark
     const bench_exe = b.addExecutable(.{
         .name = "bench",
-        .root_source_file = .{ .path = "./benchmark/main.zig" },
+        .root_source_file = b.path("./benchmark/main.zig"),
         .target = target,
         .optimize = optimize,
     });
 
     const mod = b.addModule("base64", .{
-        .root_source_file = .{ .path = "src/lib.zig" },
+        .root_source_file = b.path("src/lib.zig"),
     });
-    mod.addIncludePath(.{ .path = std.fs.path.join(b.allocator, &.{ dir(), "deps/base64/include" }) catch @panic("build failed") });
+    mod.addIncludePath(b.path("deps/base64/include"));
     bench_exe.root_module.addImport("base64", mod);
     buildAndLink(b, bench_exe) catch @panic("build failed");
 
